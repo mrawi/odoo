@@ -175,6 +175,7 @@ Here are 2 examples of database upgrade request creation using:
 
         # transform output into a dict:
         response = json.loads(data.getvalue())
+        print(response)
 
         # get http status:
         http_code = c.getinfo(pycurl.HTTP_CODE)
@@ -522,7 +523,7 @@ database upgrade request.
         postfields = urlencode(fields)
 
         c = pycurl.Curl()
-        c.setopt(pycurl.URL, PROCESS_URL)
+        c.setopt(pycurl.URL, STATUS_URL)
         c.setopt(c.POSTFIELDS, postfields)
         data = BytesIO()
         c.setopt(c.WRITEFUNCTION, data.write)
@@ -530,7 +531,7 @@ database upgrade request.
 
         # transform output into a dict:
         response = json.loads(data.getvalue())
-
+        print(response)
         c.close()
 
     .. code-block:: bash
