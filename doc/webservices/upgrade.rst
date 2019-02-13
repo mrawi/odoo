@@ -480,6 +480,75 @@ should be empty if everything went fine.
 
 .. _upgrade-api-status-method:
 
+
+Asking to skip the tests 
+=========================
+
+This action asks the Upgrade Platform to skip the tests for your request.
+If you don't want Odoo to test and validate the migration, you can bypass the testing stage and directly get the migrated dump.
+
+The ``skip_test`` method
+----------------------
+
+.. py:function:: https://upgrade.odoo.com/database/v1/skip_test
+
+    Skip the tests, deliver the upgraded dump, and set the state to 'delivered'
+
+    :param str key: (required) your private key
+    :param str request: (required) your request id
+    :return: request result
+    :rtype: JSON dictionary
+
+The request id and the private key are obtained using the :ref:`create method
+<upgrade-api-create-method>`
+
+The result is a JSON dictionary containing the list of ``failures``, which
+should be empty if everything went fine.
+
+.. rst-class:: setup doc-aside
+
+.. switcher::
+
+    .. code-block:: python
+
+        from urllib import urlencode
+        from io import BytesIO
+        import pycurl
+        import json
+
+        PROCESS_URL = "https://upgrade.odoo.com/database/v1/skip_test"
+
+        fields = dict([
+            ('request', '10534'),
+            ('key', 'Aw7pItGVKFuZ_FOR3U8VFQ=='),
+        ])
+        postfields = urlencode(fields)
+
+        c = pycurl.Curl()
+        c.setopt(pycurl.URL, PROCESS_URL)
+        c.setopt(c.POSTFIELDS, postfields)
+        data = BytesIO()
+        c.setopt(c.WRITEFUNCTION, data.write)
+        c.perform()
+
+        # transform output into a dict:
+        response = json.loads(data.getvalue())
+        print(response)
+
+        # get http status:
+        http_code = c.getinfo(pycurl.HTTP_CODE)
+        c.close()
+
+    .. code-block:: bash
+
+        PROCESS_URL="https://upgrade.odoo.com/database/v1/skip_test"
+        KEY="Aw7pItGVKFuZ_FOR3U8VFQ=="
+        REQUEST_ID="10534"
+        URL_PARAMS="key=${KEY}&request=${REQUEST_ID}"
+        curl -sS "${PROCESS_URL}?${URL_PARAMS}"
+
+.. _upgrade-api-status-method:
+
 Obtaining your request status
 =============================
 
