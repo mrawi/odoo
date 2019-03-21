@@ -133,9 +133,10 @@ The other keys will be explained in the section describing the :ref:`status meth
 Sample script
 '''''''''''''
 
-Here are 2 examples of database upgrade request creation using:
+Here are 3 examples of database upgrade request creation using:
 
-* one in the python programming language using the pycurl library
+* one in the python (version 2) programming language using the pycurl library
+* one in the python (version 3) programming language using the requests library
 * one in the bash programming language using `curl <http://curl.haxx.se>`_ (tool
   for transfering data using http) and `jq <https://stedolan.github.io/jq>`_ (JSON processor):
 
@@ -143,7 +144,7 @@ Here are 2 examples of database upgrade request creation using:
 
 .. switcher::
 
-    .. code-block:: python
+    .. code-block:: python2
 
         from urllib import urlencode
         from io import BytesIO
@@ -153,7 +154,7 @@ Here are 2 examples of database upgrade request creation using:
         CREATE_URL = "https://upgrade.odoo.com/database/v1/create"
         CONTRACT = "M123456-abcdef"
         AIM = "test"
-        TARGET = "8.0"
+        TARGET = "12.0"
         EMAIL = "john.doe@example.com"
         FILENAME = "db_name.dump"
 
@@ -180,6 +181,28 @@ Here are 2 examples of database upgrade request creation using:
         # get http status:
         http_code = c.getinfo(pycurl.HTTP_CODE)
         c.close()
+
+    .. code-block:: python3
+
+        import requests
+
+        CREATE_URL = "https://upgrade.odoo.com/database/v1/create"
+        CONTRACT = "M123456-abcdef"
+        AIM = "test"
+        TARGET = "12.0"
+        EMAIL = "john.doe@example.com"
+        FILENAME = "db_name.dump"
+
+        fields = dict([
+            ('aim', AIM),
+            ('email', EMAIL),
+            ('filename', DB_SOURCE),
+            ('contract', CONTRACT),
+            ('target', TARGET),
+        ])
+
+        r = requests.get(CREATE_URL, data=fields)
+        print(r.text)
 
     .. code-block:: bash
 
@@ -234,7 +257,7 @@ should be empty if everything went fine.
 
 .. switcher::
 
-    .. code-block:: python
+    .. code-block:: python2
 
         import os
         import pycurl
@@ -263,6 +286,22 @@ should be empty if everything went fine.
 
         c.perform()
         c.close()
+
+    .. code-block:: python3
+
+        import requests
+
+        UPLOAD_URL = "https://upgrade.odoo.com/database/v1/upload"
+        DUMPFILE = "/tmp/dump.sql"
+
+        fields = dict([
+            ('request', '10534'),
+            ('key', 'Aw7pItGVKFuZ_FOR3U8VFQ=='),
+        ])
+        headers = {"Content-Type": "application/octet-stream"}
+
+        with open(DUMPFILE, 'rb') as f:
+            requests.post(UPLOAD_URL, data=f, params=fields, headers=headers)
 
     .. code-block:: bash
 
@@ -310,7 +349,7 @@ The ``request_sftp_access`` method returns a JSON dictionary containing the foll
 
 .. switcher::
 
-    .. code-block:: python
+    .. code-block:: python2
 
         import os
         import pycurl
@@ -441,7 +480,7 @@ should be empty if everything went fine.
 
 .. switcher::
 
-    .. code-block:: python
+    .. code-block:: python2
 
         from urllib import urlencode
         from io import BytesIO
@@ -469,6 +508,20 @@ should be empty if everything went fine.
         # get http status:
         http_code = c.getinfo(pycurl.HTTP_CODE)
         c.close()
+
+    .. code-block:: python3
+
+        import requests
+
+        PROCESS_URL = "https://upgrade.odoo.com/database/v1/process"
+
+        fields = dict([
+            ('request', '10534'),
+            ('key', 'Aw7pItGVKFuZ_FOR3U8VFQ=='),
+        ])
+
+        r = requests.get(PROCESS_URL, data=fields)
+        print(r.text)
 
     .. code-block:: bash
 
@@ -509,7 +562,7 @@ should be empty if everything went fine.
 
 .. switcher::
 
-    .. code-block:: python
+    .. code-block:: python2
 
         from urllib import urlencode
         from io import BytesIO
@@ -538,6 +591,20 @@ should be empty if everything went fine.
         # get http status:
         http_code = c.getinfo(pycurl.HTTP_CODE)
         c.close()
+
+    .. code-block:: python3
+
+        import requests
+
+        PROCESS_URL = "https://upgrade.odoo.com/database/v1/skip_test"
+
+        fields = dict([
+            ('request', '10534'),
+            ('key', 'Aw7pItGVKFuZ_FOR3U8VFQ=='),
+        ])
+
+        r = requests.get(PROCESS_URL, data=fields)
+        print(r.text)
 
     .. code-block:: bash
 
@@ -576,7 +643,7 @@ database upgrade request.
 
 .. switcher::
 
-    .. code-block:: python
+    .. code-block:: python2
 
         from urllib import urlencode
         from io import BytesIO
@@ -602,6 +669,20 @@ database upgrade request.
         response = json.loads(data.getvalue())
         print(response)
         c.close()
+
+    .. code-block:: python3
+
+        import requests
+
+        PROCESS_URL = "https://upgrade.odoo.com/database/v1/status"
+
+        fields = dict([
+            ('request', '10534'),
+            ('key', 'Aw7pItGVKFuZ_FOR3U8VFQ=='),
+        ])
+
+        r = requests.get(PROCESS_URL, data=fields)
+        print(r.text)
 
     .. code-block:: bash
 
