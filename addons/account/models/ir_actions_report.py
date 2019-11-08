@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, api, _
+import logging
+
+from odoo import models, _
 from odoo.exceptions import UserError
+
+log = logging.getLogger(__name__)
+
 
 class IrActionsReport(models.Model):
     _inherit = 'ir.actions.report'

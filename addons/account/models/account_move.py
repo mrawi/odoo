@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from odoo import api, fields, models, _
-from odoo.exceptions import RedirectWarning, UserError, ValidationError
-from odoo.tools import float_is_zero, float_compare, safe_eval, date_utils, email_split, email_escape_char, email_re
-from odoo.tools.misc import formatLang, format_date
-
+import json
+import logging
+import re
 from datetime import date, timedelta
-from itertools import groupby
-from stdnum.iso7064 import mod_97_10
-from itertools import zip_longest
 from hashlib import sha256
+from itertools import groupby
+from itertools import zip_longest
 from json import dumps
 
-import json
-import re
-import logging
 import psycopg2
+from stdnum.iso7064 import mod_97_10
+
+from odoo import api, fields, models, _
+from odoo.exceptions import RedirectWarning, UserError, ValidationError
+from odoo.tools import float_is_zero, float_compare, safe_eval, date_utils, email_split, email_re
+from odoo.tools.misc import formatLang, format_date
 
 _logger = logging.getLogger(__name__)
 
@@ -252,6 +252,9 @@ class AccountMove(models.Model):
     tax_lock_date_message = fields.Char(
         compute='_compute_tax_lock_date_message',
         help="Technical field used to display a message when the invoice's accounting date is prior of the tax lock date.")
+    is_original_printed = fields.Boolean(
+        default=False,
+        help="Technical field used to display 'Original' on first print")
     # Technical field to hide Reconciled Entries stat button
     has_reconciled_entries = fields.Boolean(compute="_compute_has_reconciled_entries")
     # ==== Hash Fields ====
@@ -2230,9 +2233,12 @@ class AccountMove(models.Model):
         """ Print the invoice and mark it as sent, so that we can see more
             easily the next step of the workflow
         """
+        _logger.warning('invoice.action_invoice_print()')
         if any(not move.is_invoice(include_receipts=True) for move in self):
             raise UserError(_("Only invoices could be printed."))
 
+        # todo invoice_sent seems to fill my requirement.
+        #  Though I don't understand why we mark invoices sent upon printing
         self.filtered(lambda inv: not inv.invoice_sent).write({'invoice_sent': True})
         if self.user_has_groups('account.group_account_invoice'):
             return self.env.ref('account.account_invoices').report_action(self)
@@ -2339,6 +2345,20 @@ class AccountMove(models.Model):
         action['views'] = [(self.env.ref('account.view_move_form').id, 'form')]
         action['res_id'] = self.copy().id
         return action
+
+    def consume_original_print(self):
+        """
+        Inform if original pdf has been printed and mark it as printed if it wasn't already the case.
+        Only a posted invoice can consume the original print
+
+        :return: True the first time, False otherwise
+        """
+        if self.state != 'posted' or self.is_original_printed:
+            _logger.warning(f'cannot CONSUME ORIGINAL because state: {self.state}, is_original_printed: {self.is_original_printed}')
+            return False
+        _logger.warning('CONSUME ORIGINAL')
+        self.is_original_printed = True
+        return True
 
 
 class AccountMoveLine(models.Model):
