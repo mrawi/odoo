@@ -91,9 +91,9 @@ class IrQWeb(models.AbstractModel, QWeb):
     def default_values(self):
         """ attributes add to the values for each computed template
         """
-        default = super(IrQWeb, self).default_values()
-        default.update(request=request, cache_assets=round(time()/180), true=True, false=False) # true and false added for backward compatibility to remove after v10
-        return default
+        #default = super(IrQWeb, self).default_values()
+        #default.update(request=request, cache_assets=round(time()/180), true=True, false=False) # true and false added for backward compatibility to remove after v10
+        return {}
 
     # assume cache will be invalidated by third party on write to ir.ui.view
     def _get_template_cache_keys(self):
